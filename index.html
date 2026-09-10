@@ -27,13 +27,13 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
     <style>
         :root {
-            --site-font: Quicksand;
+            --site-font: "Quicksand";
         }
 
         body,
         #wrapper,
-        #wrapper * {
-            font-family: var(--site-font) !important;
+        #wrapper *:not(i):not([class^="ri-"]):not([class*=" ri-"]) {
+            font-family: var(--site-font);
         }
     </style>
 </head>
@@ -306,44 +306,53 @@
     <script src="assets/js/ScrollTrigger.min.js"></script>
     <script src="assets/js/Observer.min.js"></script>
     <script src="assets/js/gsap.effects.js"></script>
-   <!-- for editing purpose -->
+    <!-- for editing purpose -->
     <script src="assets/js/common_js/send_email.js"></script>
     <script src="assets/js/common_js/html_image_editor.js"></script>
     <script src="assets/js/common_js/windows_postmessage.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <script>
-        var fileName = document.title || "index";
-
-        $(document).ready(function () {
-            loadHeaderFooter("header", "client-assets/nvee10091/nvee10091/header.html");
-            loadHeaderFooter("footer", "client-assets/nvee10091/nvee10091/footer.html");
-
+        $(function () {
+            /* Start code to load js and css files properly on local server or production server: NOte: this is the workwround, need to fix this */
+            loadHeaderFooter("header", "/media/projects/nvee10091/nvee10091/header.html");
+            loadHeaderFooter("footer", "/media/projects/nvee10091/nvee10091/footer.html");
+            /*  End code */
+            /*  Start code to load js and css files properly on Githubpages  */
             loadHeaderFooter("header", "header.html");
             loadHeaderFooter("footer", "footer.html");
+            /* End code */
+            function getCurrentFile() {
+                let file = new URLSearchParams(location.search).get("srcReq") ||
+                    location.pathname.split("/").pop() ||
+                    "index.html";
+                if (!file.includes(".")) file += ".html";
+                return file.toLowerCase();
+            }
+
+            function loadHeaderFooter(id, file) {
+                $("#" + id).load(file, function (_, status) {
+                    if (status === "error") return;
+                    const targetid = $("#" + id);
+                    targetid.find("a").addClass("edit-site");
+                    if (id !== "header") return;
+                    let current = getCurrentFile();
+                    // Show / hide sections
+                    targetid.find(".main-header-section").toggle(current === "index.html");
+                    targetid.find(".header-breadcrumb-section").toggle(current !== "index.html");
+                    // Match page name
+                    let name = "";
+                    targetid.find(".main-navigation a").each(function () {
+                        let href = ($(this).attr("href") || "").split("/").pop().toLowerCase();
+                        if (href === current) name = $(this).text().trim();
+                    });
+                    // Apply name (fallback safe)
+                    targetid.find(".Page_name").text(
+                        name || current.replace(".html", "").replace(/_/g, " ")
+                    );
+                });
+            }
         });
-
-        function loadHeaderFooter(id, file) {
-            $("#" + id).load(file, function (response, status, xhr) {
-                if (status === "error") {
-                    console.error("Error loading " + file + ":", xhr.status, xhr.statusText);
-                    return;
-                }
-
-                $("#" + id).find("a").addClass("edit-site");
-
-                if (id === "header") {
-                    if (fileName.toLowerCase() === "index" || fileName.toLowerCase() === "home") {
-                        $("#" + id).find(".main-header-section").css("display", "inline-block");
-                    } else {
-                        $("#" + id).find(".main-header-section").css("display", "none");
-                        $("#" + id).find(".header-breadcrumb-section").css("display", "inline-block");
-                        $("#" + id).find(".header-breadcrumb-section .Page_name")
-                            .text(fileName.charAt(0).toUpperCase() + fileName.slice(1));
-                    }
-                }
-            });
-        }
     </script>
 
 </body>
